@@ -27,4 +27,8 @@ public class Task {
     @ManyToOne
     @JoinColumn(name="employee_id")
     private Employee employee;
+
+    @ManyToOne(cascade =  CascadeType.ALL)
+    @JoinColumn(name = "grade_id")
+    private TaskAssessment taskAssessment;
 }

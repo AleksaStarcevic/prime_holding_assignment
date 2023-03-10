@@ -24,5 +24,19 @@ public class ControllerExceptionHandler {
         return ResponseEntity.badRequest().body(exception.getMessage());
     }
 
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ResponseEntity<String> handleTaskNotFoundException(TaskNotFoundException exception) {
+        return ResponseEntity.badRequest().body(exception.getMessage());
+    }
+
+    @ExceptionHandler(EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException.class)
+    public ResponseEntity<String> handleEmployeesDoNotMeetTheRequirementsForSalaryIncreaseException(EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException exception) {
+        return ResponseEntity.badRequest().body(exception.getMessage());
+    }
+
+
+
+
+
 
 }

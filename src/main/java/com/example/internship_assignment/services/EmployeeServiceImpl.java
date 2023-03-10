@@ -4,6 +4,7 @@ import com.example.internship_assignment.data_transfer_objects.CreateNewEmployee
 import com.example.internship_assignment.data_transfer_objects.UpdateEmployeeDTO;
 import com.example.internship_assignment.entities.Employee;
 import com.example.internship_assignment.exceptions.EmployeeAlreadyExistsException;
+import com.example.internship_assignment.exceptions.EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException;
 import com.example.internship_assignment.exceptions.UserDoesNotExistException;
 import com.example.internship_assignment.repositories.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,6 +64,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<Employee> getTopFiveEmployees() {
       List<Employee> employees = employeeRepository.getTopFiveEmployees();
       return employees;
+    }
+
+    @Override
+    public List<Employee> increaseSalary() throws EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException {
+       List<Employee> employeesToIncreaseSalary = employeeRepository.getEmployeesWithBestGrades();
+       if(employeesToIncreaseSalary.isEmpty()) throw new EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException("None of the employees met the criteria for salary increase");
+
+       return employeesToIncreaseSalary.stream().map(employee -> {
+            employee.setMonthlySalary(employee.getMonthlySalary() * 1.2);
+            return employeeRepository.save(employee);
+       }).collect(Collectors.toList());
     }
 
     private Employee findEmployeeById(int id) throws UserDoesNotExistException {

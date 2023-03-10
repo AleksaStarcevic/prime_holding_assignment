@@ -18,4 +18,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
             "ORDER BY count(*) desc " +
             "LIMIT 5",nativeQuery = true)
     List<Employee> getTopFiveEmployees();
+
+    @Query(value = "select e.id,e.full_name,e.email,e.birth_date,e.monthly_salary,e.phone_number " +
+            "from task t join employee e on t.employee_id = e.id join task_assessment ta on t.grade_id = ta.id " +
+            "where t.due_date > current_date - interval 6 month " +
+            "group by t.employee_id " +
+            "having avg(ta.grade) between 4 and 5;",nativeQuery = true)
+    List<Employee> getEmployeesWithBestGrades();
 }

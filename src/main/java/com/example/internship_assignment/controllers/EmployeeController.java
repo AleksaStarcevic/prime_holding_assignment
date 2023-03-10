@@ -3,8 +3,9 @@ package com.example.internship_assignment.controllers;
 import com.example.internship_assignment.data_transfer_objects.CreateNewEmployeeDTO;
 import com.example.internship_assignment.data_transfer_objects.UpdateEmployeeDTO;
 import com.example.internship_assignment.exceptions.EmployeeAlreadyExistsException;
+import com.example.internship_assignment.exceptions.EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException;
 import com.example.internship_assignment.exceptions.UserDoesNotExistException;
-import com.example.internship_assignment.services.EmployeeServiceImpl;
+import com.example.internship_assignment.services.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class EmployeeController {
 
-    private final EmployeeServiceImpl employeeService;
+    private final EmployeeService employeeService;
 
     @PostMapping("/employees")
     public ResponseEntity<?> createNewEmployee(@Valid @RequestBody CreateNewEmployeeDTO employeeDTO) throws EmployeeAlreadyExistsException {
@@ -42,5 +43,10 @@ public class EmployeeController {
     @GetMapping("/employees/topEmployees")
     public ResponseEntity<?> topFiveEmployees() {
         return new ResponseEntity<>(employeeService.getTopFiveEmployees(), HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/salary")
+    public ResponseEntity<?> increaseSalaryForEmployeesWithBestGradesInPastSixMonths() throws EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException {
+        return new ResponseEntity<>(employeeService.increaseSalary(), HttpStatus.OK);
     }
 }
