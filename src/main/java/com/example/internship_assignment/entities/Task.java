@@ -1,7 +1,6 @@
 package com.example.internship_assignment.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +8,6 @@ import java.util.Date;
 
 @Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class Task {
 
@@ -31,4 +29,11 @@ public class Task {
     @ManyToOne(cascade =  CascadeType.ALL)
     @JoinColumn(name = "grade_id")
     private TaskAssessment taskAssessment;
+
+    public Task(String title, String description, Date dueDate, Employee employee) {
+        this.title = title;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.employee = employee;
+    }
 }

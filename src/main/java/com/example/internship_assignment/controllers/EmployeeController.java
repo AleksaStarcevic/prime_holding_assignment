@@ -4,6 +4,7 @@ import com.example.internship_assignment.data_transfer_objects.CreateNewEmployee
 import com.example.internship_assignment.data_transfer_objects.UpdateEmployeeDTO;
 import com.example.internship_assignment.exceptions.EmployeeAlreadyExistsException;
 import com.example.internship_assignment.exceptions.EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException;
+import com.example.internship_assignment.exceptions.TaskNotFoundException;
 import com.example.internship_assignment.exceptions.UserDoesNotExistException;
 import com.example.internship_assignment.services.EmployeeService;
 import jakarta.validation.Valid;
@@ -30,7 +31,7 @@ public class EmployeeController {
     }
 
     @PatchMapping("/employees/{id}")
-    public ResponseEntity<?> updateEmployee(@PathVariable int id,@Valid @RequestBody UpdateEmployeeDTO employeeDTO) throws UserDoesNotExistException {
+    public ResponseEntity<?> updateEmployee(@PathVariable int id,@Valid @RequestBody UpdateEmployeeDTO employeeDTO) throws UserDoesNotExistException, EmployeeAlreadyExistsException {
        return new ResponseEntity<>(employeeService.updateEmployee(id,employeeDTO), HttpStatus.OK);
     }
 
@@ -48,5 +49,25 @@ public class EmployeeController {
     @GetMapping("/employees/salary")
     public ResponseEntity<?> increaseSalaryForEmployeesWithBestGradesInPastSixMonths() throws EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException {
         return new ResponseEntity<>(employeeService.increaseSalary(), HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/{id}/statistics/averageGradeMonth")
+    public ResponseEntity<?> getAverageGradeForMonth(@PathVariable int id,@RequestParam int month) {
+        return new ResponseEntity<>(employeeService.getAverageGradeForMonth(id,month), HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/{id}/statistics/tasksMonth")
+    public ResponseEntity<?> getNumberOfTasksForMonth(@PathVariable int id,@RequestParam int month) {
+        return new ResponseEntity<>(employeeService.getTasksPerMonthForEmployee(id,month), HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/{id}/statistics/gradeChange")
+    public ResponseEntity<?> getPercentOfGradeChangeComparedToLastYear(@PathVariable int id) {
+        return new ResponseEntity<>(employeeService.getPercentOfGradeChangeComparedToLastYear(id), HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/{id}/statistics/worstGradeTask")
+    public ResponseEntity<?> getTaskWithWorstGrade(@PathVariable int id,@RequestParam int month) throws TaskNotFoundException {
+        return new ResponseEntity<>(employeeService.getTaskWithWorstGrade(id,month), HttpStatus.OK);
     }
 }

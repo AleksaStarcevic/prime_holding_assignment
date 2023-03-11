@@ -25,4 +25,28 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
             "group by t.employee_id " +
             "having avg(ta.grade) between 4 and 5;",nativeQuery = true)
     List<Employee> getEmployeesWithBestGrades();
+
+    @Query(value ="select avg(ta.grade) " +
+            "from task t join task_assessment ta on t.grade_id = ta.id " +
+            "where t.employee_id = :employeeId and month(t.due_date) = :month and year(t.due_date) = year(current_date);" ,nativeQuery = true)
+    Optional<Double> getAverageGradeForMonth(int employeeId,int month);
+
+    @Query(value ="select count(*) " +
+            "from task t " +
+            "where t.employee_id = :employeeId and month(t.due_date) = :month and year(t.due_date) = year(current_date) " +
+            "group by t.employee_id;" ,nativeQuery = true)
+    Optional<Integer> getTasksPerMonthForEmployee(int employeeId,int month);
+
+    @Query(value = "select avg(ta.grade) " +
+            "from task t join task_assessment ta on t.grade_id = ta.id " +
+            "where t.employee_id = :employeeId and year(t.due_date) = :yearFromDate",nativeQuery = true)
+    Optional<Double> getPercentOfGradeChangeComparedToLastYear(int employeeId,int yearFromDate);
+
+    @Query(value = "select t.id " +
+            "from task t join task_assessment ta on t.grade_id = ta.id join employee e on t.employee_id = e.id " +
+            "where t.employee_id = :employeeId and month(t.due_date) = :month and year(t.due_date) = year(current_date) " +
+            "order by ta.grade asc " +
+            "limit 1"
+            ,nativeQuery = true)
+    Optional<Integer> getTaskWithWorstGradeForEmployee(int employeeId, int month);
 }

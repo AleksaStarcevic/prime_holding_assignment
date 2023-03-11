@@ -5,11 +5,13 @@ import com.example.internship_assignment.data_transfer_objects.UpdateEmployeeDTO
 import com.example.internship_assignment.entities.Employee;
 import com.example.internship_assignment.exceptions.EmployeeAlreadyExistsException;
 import com.example.internship_assignment.exceptions.EmployeesDoNotMeetTheRequirementsForSalaryIncreaseException;
+import com.example.internship_assignment.exceptions.TaskNotFoundException;
 import com.example.internship_assignment.exceptions.UserDoesNotExistException;
 import com.example.internship_assignment.repositories.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +38,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee updateEmployee(int id, UpdateEmployeeDTO employeeDTO) throws UserDoesNotExistException {
+    public Employee updateEmployee(int id, UpdateEmployeeDTO employeeDTO) throws UserDoesNotExistException, EmployeeAlreadyExistsException {
         Employee employee = findEmployeeById(id);
 
         String emailToUpdate = employeeDTO.getEmail();
@@ -45,11 +47,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         Date birthDateToUpdate = employeeDTO.getBirthDate();
         Double salaryToUpdate = employeeDTO.getMonthlySalary();
 
+        Optional<Employee> employeeOptional = employeeRepository.findByEmail(emailToUpdate);
+        if(employeeOptional.isPresent()) throw new EmployeeAlreadyExistsException("This email is not available");
+
         if(emailToUpdate != null) employee.setEmail(emailToUpdate);
         if(fullNameToUpdate != null) employee.setFullName(fullNameToUpdate);
         if(phoneToUpdate != null) employee.setPhoneNumber(phoneToUpdate);
         if(birthDateToUpdate != null) employee.setBirthDate(birthDateToUpdate);
-        if(salaryToUpdate != null && salaryToUpdate >0) employee.setMonthlySalary(salaryToUpdate);
+        if(salaryToUpdate != null && salaryToUpdate > 0) employee.setMonthlySalary(salaryToUpdate);
 
         return employeeRepository.save(employee);
     }
@@ -77,10 +82,47 @@ public class EmployeeServiceImpl implements EmployeeService {
        }).collect(Collectors.toList());
     }
 
+    @Override
+    public double getAverageGradeForMonth(int employeeId, int month) {
+       Optional<Double> gradeOptional =  employeeRepository.getAverageGradeForMonth(employeeId,month);
+       if(gradeOptional.isPresent()){
+           return gradeOptional.get();
+       }
+       return 0;
+    }
+
+    @Override
+    public int getTasksPerMonthForEmployee(int id, int month) {
+        Optional<Integer> tasksOptional = employeeRepository.getTasksPerMonthForEmployee(id,month);
+       if(tasksOptional.isPresent()){
+           return tasksOptional.get();
+       }
+       return 0;
+    }
+
+    @Override
+    public double getPercentOfGradeChangeComparedToLastYear(int id) {
+       Optional<Double> previousYearAvgGradeOptional = employeeRepository.getPercentOfGradeChangeComparedToLastYear(id, Year.now().getValue() - 1);
+       Optional<Double> thisYearAvgGradeOptional = employeeRepository.getPercentOfGradeChangeComparedToLastYear(id, Year.now().getValue());
+
+       if(previousYearAvgGradeOptional.isPresent() && thisYearAvgGradeOptional.isPresent()){
+           Double thisYearAverageGrade = thisYearAvgGradeOptional.get();
+           Double lastYearAverageGrade = previousYearAvgGradeOptional.get();
+           return Math.round((thisYearAverageGrade - lastYearAverageGrade) / lastYearAverageGrade * 100);
+       }
+       return 0;
+    }
+
+    @Override
+    public Integer getTaskWithWorstGrade(int id, int month) throws TaskNotFoundException {
+       Optional<Integer> taskOptional =  employeeRepository.getTaskWithWorstGradeForEmployee(id,month);
+       if(taskOptional.isEmpty()) throw new TaskNotFoundException("Task with minimum grade for employee not found");
+       return taskOptional.get();
+    }
+
     private Employee findEmployeeById(int id) throws UserDoesNotExistException {
         Optional<Employee> employeeOptional =  employeeRepository.findById(id);
         if(employeeOptional.isEmpty()) throw new UserDoesNotExistException("Can't find user with given id");
-        Employee employee = employeeOptional.get();
-        return employee;
+        return employeeOptional.get();
     }
 }
